@@ -74,6 +74,18 @@ alias meter = metre; /// ditto
 enum mole = Mole.init; /// ditto
 enum second = Second.init; /// ditto
 
+///
+unittest {
+	void fun(Quantity!Ampere qa) {
+	}
+
+	Quantity!Ampere a = 1.0 * ampere;
+	fun(a);
+
+	// you cannot assign Quantity!Gram to Quantity!Ampere
+	static assert(!__traits(compiles, a = 1.0 * gram));
+}
+
 /**
  * SI supplementary units for angles.
  */

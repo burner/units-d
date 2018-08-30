@@ -70,6 +70,7 @@ module experimental.units;
  */
 
 import std.typetuple : AliasSeq, allSatisfy, staticMap;
+import std.algorithm : makeIndex;
 
 @safe:
 
@@ -481,7 +482,7 @@ private
             // std.algorithm.sort() is currently buggy at compile-time, use
             // our custom makeIndex implementation instead.
             auto indices = new size_t[bueStrings.length];
-            makeIndexCtfe(bueStrings, indices);
+            makeIndex(bueStrings, indices);
 
             string result = bueStrings[indices[0]];
             foreach (i; indices[1 .. $])
@@ -1855,7 +1856,7 @@ mixin template DefinePrefixSystem(alias System)
 }
 
 ///
-@safe pure nothrow /+ TODO @nogc +/ unittest
+@safe pure /+ TODO @nogc +/ unittest
 {
     alias System = PrefixSystem!(10, { return [Prefix(-6, "micro", "µ"), Prefix(-3, "milli", "m"), Prefix(3, "kilo", "k")]; });
 
@@ -2015,49 +2016,16 @@ private
         }
 
         auto indices = new size_t[elements.length];
-        makeIndexCtfe(elements, indices);
+        makeIndex(elements, indices);
         return indices;
     }
 
     ///
-    @safe pure nothrow /+ TODO @nogc +/ unittest
+    @safe pure /+ TODO @nogc +/ unittest
     {
         assert(makeArgumentIndex("c", "d", "a", "b") == [2, 3, 0, 1]);
     }
 
-    /*
-     * Specialized version of `std.algorithm.makeIndex` because that currently
-     * doesn't work with CTFE.
-     *
-     * Even though it is easily possible to make CTFE accept it, it silently
-     * fails (for reasons not yet traced down).
-     */
-    void makeIndexCtfe(T)(T[] r, ref size_t[] index)
-    {
-        assert(r.length == index.length);
-        if (index.length <= 1)
-            return;
-
-        // Can't use ref foreach here due to @@BUG3835@@.
-        foreach (i, Unused; index)
-        {
-            index[i] = i;
-        }
-
-        // Just a simple insertion sort, but works in CTFE both before and
-        // after Don's array handling overhaul.
-        for (size_t i = 1; i < index.length; ++i)
-        {
-            auto current = index[i];
-            auto j = i;
-            while (j > 0 && (r[index[j - 1]] > r[current]))
-            {
-                index[j] = index[j - 1];
-                --j;
-            }
-            index[j] = current;
-        }
-    }
 }
 
 /*
