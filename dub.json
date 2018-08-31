@@ -3,6 +3,7 @@
     "description": "Units and Quantities of Measurement library for D.",
     "homepage": "https://github.com/nordlow/units-d",
     "license": "Boost",
+	"dflags": ["-dip25", "-dip1000"],
     "authors": [
         "David Nadlinger",
         "Per Nordlöw"
